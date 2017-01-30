@@ -23,7 +23,8 @@ import weka.core.Instances;
  * @author Mazid
  */
 public class DataPreprocessor {
-                
+    
+    // remove some unecessary attributes and instaces with missing values
     public void preprocess(String src, String dest) throws IOException {
         // load data set
         Instances instances = new Instances(
@@ -45,6 +46,7 @@ public class DataPreprocessor {
         writer.close();
     }
     
+    // generate new arff file for "age" value from 0 to 30
     public void age_0_to_30(String src, String dest) throws IOException {
         // load data set
         Instances instances = new Instances(
@@ -66,6 +68,7 @@ public class DataPreprocessor {
         writer.close();
     }
     
+    // generate new arff file for "age" value greater than 70
     public void age_greater_than_70(String src, String dest) throws IOException {
         // load data set
         Instances instances = new Instances(
@@ -87,6 +90,7 @@ public class DataPreprocessor {
         writer.close();
     }
     
+    // create new model using train data
     public void createModel(String src, String dest) throws Exception {
         // create NaiveBayes
         Classifier cls = new NaiveBayes();

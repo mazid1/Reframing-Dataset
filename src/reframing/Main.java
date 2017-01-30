@@ -25,9 +25,13 @@ public class Main {
     public static void main(String[] args) throws IOException, ClassNotFoundException, Exception {
         
         DataPreprocessor dp = new DataPreprocessor();
+        // remove some unecessary attributes and instaces with missing values
         dp.preprocess("data/chronic_kidney_disease.arff", "data/edited.arff");
+        // generate new arff file for "age" value from 0 to 30
         dp.age_0_to_30("data/edited.arff", "data/age_0_to_30.arff");
+        // generate new arff file for "age" value greater than 70
         dp.age_greater_than_70("data/edited.arff", "data/age_more_than_70.arff");
+        // create new model using train data
         dp.createModel("data/age_0_to_30.arff", "data/age_0_to_30.model");
         
         // load train data set
