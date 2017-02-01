@@ -56,6 +56,9 @@ public class Main {
         Evaluation eval = new Evaluation(train);
         eval.evaluateModel(cls, test);
         System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+        
+        Reframing rf = new Reframing();
+        rf.reframing(train, test, cls);
     }
     
 }
