@@ -13,12 +13,12 @@ public class Reframing {
     Instances train, test;
     Classifier model;
     
-    public void selectAlphaBeta(Instances train, Instances test, Classifier model, int idx) throws Exception {
+    public void selectAlphaBeta(int idx) throws Exception {
         double p = 0.1;
         double alpha = 1.0;
         double negAlpha = alpha, posAlpha = alpha;
-        Instances shiftedNegTest = test;
-        Instances shiftedPosTest = test;
+        Instances shiftedNegTest = new Instances(test);
+        Instances shiftedPosTest = new Instances(test);
         
         Evaluation eval = new Evaluation(train);
         eval.evaluateModel(model, test);
@@ -28,6 +28,7 @@ public class Reframing {
         double posMeanAbsoluteError;
         
         // decrease alpha for geting better result
+        int count = 0;
         do {
             negAlpha -= p;
             negMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
@@ -37,10 +38,12 @@ public class Reframing {
             // evaluate shifted test data
             eval.evaluateModel(model, shiftedNegTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
-        }while(tmpMeanAbsoluteError < negMeanAbsoluteError); // continue if new result is better than older
+            count++;
+        }while(tmpMeanAbsoluteError <= negMeanAbsoluteError && count < 10); // continue if new result is better than older
         
         // increase alpha for geting better result
         tmpMeanAbsoluteError = meanAbsoluteError;
+        count = 0;
         do {
             posAlpha += p;
             posMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
@@ -50,7 +53,8 @@ public class Reframing {
             // evaluate shifted test data
             eval.evaluateModel(model, shiftedPosTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
-        }while(tmpMeanAbsoluteError < posMeanAbsoluteError); // continue if new result is better than older
+            count++;
+        }while(tmpMeanAbsoluteError <= posMeanAbsoluteError && count < 10); // continue if new result is better than older
         
         // select best alpha
         if(negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
@@ -69,13 +73,14 @@ public class Reframing {
         posMeanAbsoluteError = meanAbsoluteError;
         tmpMeanAbsoluteError = meanAbsoluteError;
         
-        shiftedNegTest = test;
-        shiftedPosTest = test;
+        shiftedNegTest = new Instances(test);
+        shiftedPosTest = new Instances(test);
         
         double beta = 0.0;
         double negBeta = beta, posBeta = beta;
         
         // decrease beta for geting better result
+        count = 0;
         do {
             negBeta -= p;
             negMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
@@ -85,10 +90,12 @@ public class Reframing {
             // evaluate shifted test data
             eval.evaluateModel(model, shiftedNegTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
-        }while(tmpMeanAbsoluteError < negMeanAbsoluteError); // continue if new result is better than older
+            count++;
+        }while(tmpMeanAbsoluteError <= negMeanAbsoluteError && count < 10); // continue if new result is better than older
         
         // increase beta for geting better result
         tmpMeanAbsoluteError = meanAbsoluteError;
+        count = 0;
         do {
             posBeta += p;
             posMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
@@ -98,7 +105,8 @@ public class Reframing {
             // evaluate shifted test data
             eval.evaluateModel(model, shiftedPosTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
-        }while(tmpMeanAbsoluteError < posMeanAbsoluteError); // continue if new result is better than older
+            count++;
+        }while(tmpMeanAbsoluteError <= posMeanAbsoluteError && count < 10); // continue if new result is better than older
         
         // select best beta
         if(negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
@@ -116,14 +124,13 @@ public class Reframing {
         for(int i=0; i<this.test.numInstances(); i++) {
             this.test.instance(i).setValue(idx, this.test.instance(i).value(idx)*alpha+beta );		    	
         }
-        //System.out.println("alpha = " + alpha + " beta = " + beta);
     }
     
-    public void hillClimbing(Instances train, Instances test, Classifier model) throws Exception {
+    public void hillClimbing() throws Exception {
         int numOfAttributes = test.numAttributes() - 1; // excluding class attribute
         // find optimum alpha beta for each attribute
         for(int i=0; i<numOfAttributes; i++) {
-            selectAlphaBeta(this.train, this.test, this.model, i);
+            selectAlphaBeta(i);
         }
         // now evaluate the shifted test data set
         Evaluation eval = new Evaluation(this.train);
@@ -133,11 +140,11 @@ public class Reframing {
     
     public void reframing(Instances train, Instances test, Classifier model) throws Exception
     {
-        this.train = train;
-        this.test = test;
+        this.train = new Instances(train);
+        this.test = new Instances(test);
         this.model = model;
         
         // call hillclimbing
-        hillClimbing(train, test, model);
+        hillClimbing();
     }
 }
