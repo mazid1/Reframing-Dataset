@@ -54,6 +54,9 @@ public class Main {
         
         Reframing rf = new Reframing();
         rf.reframing(train, test, cls);
+        
+        ReframingQuadratic rq = new ReframingQuadratic();
+        rq.reframing(train, test, cls);
     }
     
 }
