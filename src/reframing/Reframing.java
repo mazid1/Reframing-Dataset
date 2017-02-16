@@ -60,12 +60,12 @@ public class Reframing {
         if(negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
             alpha = negAlpha + p;
             meanAbsoluteError = negMeanAbsoluteError;
-            test = shiftedNegTest;
+            //test = shiftedNegTest;
         }
         else if(posMeanAbsoluteError < negMeanAbsoluteError && posMeanAbsoluteError < meanAbsoluteError) {
             alpha = posAlpha - p;
             meanAbsoluteError = posMeanAbsoluteError;
-            test = shiftedPosTest;
+            //test = shiftedPosTest;
         }
 
         // now same procedure for beta
@@ -112,18 +112,21 @@ public class Reframing {
         if(negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
             beta = negBeta + p;
             meanAbsoluteError = negMeanAbsoluteError;
-            test = shiftedNegTest;
+            //test = shiftedNegTest;
         }
         else if(posMeanAbsoluteError < negMeanAbsoluteError && posMeanAbsoluteError < meanAbsoluteError) {
             beta = posBeta - p;
             meanAbsoluteError = posMeanAbsoluteError;
-            test = shiftedPosTest;
+            //test = shiftedPosTest;
         }
 
         // now shift dataset using learned alpha beta
         for(int i=0; i<this.test.numInstances(); i++) {
+            //if(i==0) System.out.println("before change: " + this.test.instance(0));
             this.test.instance(i).setValue(idx, this.test.instance(i).value(idx)*alpha+beta );
         }
+        //System.out.println("Alpha=" + alpha + " beta=" + beta);
+        //System.out.println("after change: " + this.test.instance(0));
     }
 
     public void hillClimbing() throws Exception {

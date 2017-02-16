@@ -41,7 +41,7 @@ public class ReframingQuadratic {
             eval.evaluateModel(model, shiftedNegTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
-        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count < 10); // continue if new result is better than older
+        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count <= 10); // continue if new result is better than older
 
         // increase alpha for geting better result
         tmpMeanAbsoluteError = meanAbsoluteError;
@@ -56,17 +56,17 @@ public class ReframingQuadratic {
             eval.evaluateModel(model, shiftedPosTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
-        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count < 10); // continue if new result is better than older
+        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count <= 10); // continue if new result is better than older
 
         // select best alpha
         if (negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
             alpha = negAlpha + p;
             meanAbsoluteError = negMeanAbsoluteError;
-            test = shiftedNegTest;
+            //test = shiftedNegTest;
         } else if (posMeanAbsoluteError < negMeanAbsoluteError && posMeanAbsoluteError < meanAbsoluteError) {
             alpha = posAlpha - p;
             meanAbsoluteError = posMeanAbsoluteError;
-            test = shiftedPosTest;
+            //test = shiftedPosTest;
         }
 
         // now same procedure for beta
@@ -93,7 +93,7 @@ public class ReframingQuadratic {
             eval.evaluateModel(model, shiftedNegTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
-        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count < 10); // continue if new result is better than older
+        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count <= 10); // continue if new result is better than older
 
         // increase beta for geting better result
         tmpMeanAbsoluteError = meanAbsoluteError;
@@ -108,17 +108,17 @@ public class ReframingQuadratic {
             eval.evaluateModel(model, shiftedPosTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
-        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count < 10); // continue if new result is better than older
+        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count <= 10); // continue if new result is better than older
 
         // select best beta
         if (negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
             beta = negBeta + p;
             meanAbsoluteError = negMeanAbsoluteError;
-            test = shiftedNegTest;
+            //test = shiftedNegTest;
         } else if (posMeanAbsoluteError < negMeanAbsoluteError && posMeanAbsoluteError < meanAbsoluteError) {
             beta = posBeta - p;
             meanAbsoluteError = posMeanAbsoluteError;
-            test = shiftedPosTest;
+            //test = shiftedPosTest;
         }
 
         // now same procedure for gamma
@@ -145,7 +145,7 @@ public class ReframingQuadratic {
             eval.evaluateModel(model, shiftedNegTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
-        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count < 10); // continue if new result is better than older
+        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count <= 10); // continue if new result is better than older
 
         // increase gamma for geting better result
         tmpMeanAbsoluteError = meanAbsoluteError;
@@ -160,23 +160,31 @@ public class ReframingQuadratic {
             eval.evaluateModel(model, shiftedPosTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
-        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count < 10); // continue if new result is better than older
+        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count <= 10); // continue if new result is better than older
 
         // select best gamma
         if (negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
             gamma = negBeta + p;
             meanAbsoluteError = negMeanAbsoluteError;
-            test = shiftedNegTest;
+            //test = shiftedNegTest;
         } else if (posMeanAbsoluteError < negMeanAbsoluteError && posMeanAbsoluteError < meanAbsoluteError) {
             gamma = posGamma - p;
             meanAbsoluteError = posMeanAbsoluteError;
-            test = shiftedPosTest;
+            //test = shiftedPosTest;
         }
 
         // now shift dataset using learned alpha beta gamma
+        //System.out.println("Alpha=" + alpha + " beta=" + beta + " gamma=" + gamma);
+        //System.out.println(this.test.instance(0));
         for (int i = 0; i < this.test.numInstances(); i++) {
-            this.test.instance(i).setValue(idx, this.test.instance(i).value(idx) * beta + gamma);
+            if(i==0) System.out.println("before shift" + this.test.instance(0));
+            this.test.instance(i).setValue(idx, this.test.instance(i).value(idx) * this.test.instance(i).value(idx) * alpha 
+                                                + this.test.instance(i).value(idx) * beta
+                                                + gamma);
         }
+        
+        System.out.println("Alpha=" + alpha + " beta=" + beta + " gamma=" + gamma);
+        System.out.println("after shift" + this.test.instance(0));
     }
 
     public void hillClimbing() throws Exception {
@@ -195,7 +203,7 @@ public class ReframingQuadratic {
         this.train = new Instances(train);
         this.test = new Instances(test);
         this.model = model;
-
+        //System.out.println(this.test.instance(0));
         // call hillclimbing
         hillClimbing();
     }
