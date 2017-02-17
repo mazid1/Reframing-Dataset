@@ -29,7 +29,7 @@ public class Main {
         // generate new arff file for "age" value from 0 to 30
         dp.age_0_to_30("data/edited.arff", "data/age_0_to_30.arff");
         // generate new arff file for "age" value greater than 70
-        //dp.age_greater_than_70("data/edited.arff", "data/age_more_than_70.arff");
+        dp.age_greater_than_70("data/edited.arff", "data/age_more_than_70.arff");
         // create new model using train data
         dp.createModel("data/age_0_to_30.arff", "data/age_0_to_30.model");
         

@@ -31,8 +31,8 @@ public class DataPreprocessor {
         for(int i=8; i>=2; i--)
             instances.deleteAttributeAt(i);
         
-        for(int i=0; i<=4; i++)
-            instances.deleteWithMissing(i);
+        //for(int i=0; i<=4; i++)
+            //instances.deleteWithMissing(i);
         
         BufferedWriter writer = new BufferedWriter(new FileWriter(dest));
         writer.write(instances.toString());

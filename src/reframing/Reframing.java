@@ -36,6 +36,7 @@ public class Reframing {
                 shiftedNegTest.instance(i).setValue(idx, negAlpha * test.instance(i).value(idx));
             }
             // evaluate shifted test data
+            eval = new Evaluation(train);
             eval.evaluateModel(model, shiftedNegTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
@@ -51,6 +52,7 @@ public class Reframing {
                 shiftedPosTest.instance(i).setValue(idx, posAlpha * test.instance(i).value(idx));
             }
             // evaluate shifted test data
+            eval = new Evaluation(train);
             eval.evaluateModel(model, shiftedPosTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
@@ -88,6 +90,7 @@ public class Reframing {
                 shiftedNegTest.instance(i).setValue(idx, negBeta + test.instance(i).value(idx));
             }
             // evaluate shifted test data
+            eval = new Evaluation(train);
             eval.evaluateModel(model, shiftedNegTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
@@ -103,6 +106,7 @@ public class Reframing {
                 shiftedPosTest.instance(i).setValue(idx, posBeta + test.instance(i).value(idx));
             }
             // evaluate shifted test data
+            eval = new Evaluation(train);
             eval.evaluateModel(model, shiftedPosTest);
             tmpMeanAbsoluteError = eval.meanAbsoluteError();
             count++;
