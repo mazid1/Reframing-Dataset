@@ -33,6 +33,7 @@ public class DataPreprocessor {
         
         //for(int i=0; i<=4; i++)
             //instances.deleteWithMissing(i);
+        instances.deleteWithMissing(0); // remove instances with missing age
         
         BufferedWriter writer = new BufferedWriter(new FileWriter(dest));
         writer.write(instances.toString());

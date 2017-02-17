@@ -12,6 +12,7 @@ public class Reframing {
 
     Instances train, test;
     Classifier model;
+    int num;
 
     public void selectAlphaBeta(int idx) throws Exception {
         double p = 0.1;
@@ -32,7 +33,7 @@ public class Reframing {
         do {
             negAlpha -= p;
             negMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for(int i=0; i<shiftedNegTest.numInstances(); i++) {
+            for(int i=0; i<num; i++) {
                 shiftedNegTest.instance(i).setValue(idx, negAlpha * test.instance(i).value(idx));
             }
             // evaluate shifted test data
@@ -48,7 +49,7 @@ public class Reframing {
         do {
             posAlpha += p;
             posMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for(int i=0; i<shiftedPosTest.numInstances(); i++) {
+            for(int i=0; i<num; i++) {
                 shiftedPosTest.instance(i).setValue(idx, posAlpha * test.instance(i).value(idx));
             }
             // evaluate shifted test data
@@ -86,7 +87,7 @@ public class Reframing {
         do {
             negBeta -= p;
             negMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for(int i=0; i<shiftedNegTest.numInstances(); i++) {
+            for(int i=0; i<num; i++) {
                 shiftedNegTest.instance(i).setValue(idx, negBeta + test.instance(i).value(idx));
             }
             // evaluate shifted test data
@@ -102,7 +103,7 @@ public class Reframing {
         do {
             posBeta += p;
             posMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for(int i=0; i<shiftedPosTest.numInstances(); i++) {
+            for(int i=0; i<num; i++) {
                 shiftedPosTest.instance(i).setValue(idx, posBeta + test.instance(i).value(idx));
             }
             // evaluate shifted test data
@@ -125,7 +126,7 @@ public class Reframing {
         }
 
         // now shift dataset using learned alpha beta
-        for(int i=0; i<this.test.numInstances(); i++) {
+        for(int i=0; i<num; i++) {
             //if(i==0) System.out.println("before change: " + this.test.instance(0));
             this.test.instance(i).setValue(idx, this.test.instance(i).value(idx)*alpha+beta );
         }
@@ -142,14 +143,16 @@ public class Reframing {
         // now evaluate the shifted test data set
         Evaluation eval = new Evaluation(this.train);
         eval.evaluateModel(this.model, this.test);
-        System.out.println(eval.toSummaryString("\nResults for linear shifted dataset\n======\n", false));
+        System.out.println(eval.toSummaryString("\nResults for linear shifted dataset\nShifted " + num + " data\n=================\n", false));
+        //System.out.println("Precision: " + eval.precision(this.test.classIndex()) + "\nRecall: " + eval.recall(this.test.classIndex()));
     }
 
-    public void reframing(Instances train, Instances test, Classifier model) throws Exception
+    public void reframing(Instances train, Instances test, Classifier model, int num) throws Exception
     {
         this.train = new Instances(train);
         this.test = new Instances(test);
         this.model = model;
+        this.num = num;
 
         // call hillclimbing
         hillClimbing();

@@ -3,11 +3,14 @@ package reframing;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instances;
 
 
@@ -23,45 +26,96 @@ public class Main {
         // Chronic kindey disease data
         /////////////////////////////////////
         
+        Evaluation eval;
+        Reframing rf;
+        ReframingQuadratic rq;
         DataPreprocessor dp = new DataPreprocessor();
+        Instances train;
+        Instances test;
+        ObjectInputStream ois;
+        Classifier cls;
+        
+    /*  
         // remove some unecessary attributes and instaces with missing values
         dp.preprocess("data/chronic_kidney_disease.arff", "data/edited.arff");
         // generate new arff file for "age" value from 0 to 30
         dp.age_0_to_30("data/edited.arff", "data/age_0_to_30.arff");
         // generate new arff file for "age" value greater than 70
-        dp.age_greater_than_70("data/edited.arff", "data/age_more_than_70.arff");
+        //dp.age_greater_than_70("data/edited.arff", "data/age_more_than_70.arff");
         // create new model using train data
         dp.createModel("data/age_0_to_30.arff", "data/age_0_to_30.model");
         
         // load train data set
-        Instances train = new Instances(
+        train = new Instances(
                             new BufferedReader(
                                 new FileReader("data/age_0_to_30.arff")));
         train.setClassIndex(train.numAttributes() - 1);
         
         // load test data set
-        Instances test = new Instances(
+        test = new Instances(
                             new BufferedReader(
                                 new FileReader("data/age_more_than_70.arff")));
         test.setClassIndex(test.numAttributes() - 1);
         
         // deserialize model
-        ObjectInputStream ois = new ObjectInputStream(
+        ois = new ObjectInputStream(
                            new FileInputStream("data/age_0_to_30.model"));
-        Classifier cls = (Classifier) ois.readObject();
+        cls = (Classifier) ois.readObject();
         ois.close();
         
         // evaluate classifier and print some statistics
-        Evaluation eval = new Evaluation(train);
-        eval.evaluateModel(cls, test);
+        //Evaluation eval = new Evaluation(train);
+        //eval.evaluateModel(cls, test);
         System.out.println("Chronic kidney disease:");
-        System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+        //System.out.println(eval.toSummaryString("\nBase result\n===========\n", false));
+        //System.out.println("Precision: " + eval.precision(test.numAttributes() - 1) + "\nRecall: " + eval.recall(test.numAttributes() - 1));
         
-        Reframing rf = new Reframing();
-        rf.reframing(train, test, cls);
         
-        ReframingQuadratic rq = new ReframingQuadratic();
-        rq.reframing(train, test, cls);
+        Instances tmpTest;
+        for(int i=5; ; i+=5) {
+            if(i > test.numInstances()) {
+                i = test.numInstances();
+                
+                eval = new Evaluation(train);
+                eval.evaluateModel(cls, test);
+                //System.out.println("Chronic kidney disease:");
+                System.out.println(eval.toSummaryString("\nBase result\nnum of data " + i + "\n===========\n", false));
+            
+                rf = new Reframing();
+                rf.reframing(train, test, cls, i);
+
+                rq = new ReframingQuadratic();
+                rq.reframing(train, test, cls, i);
+                break;
+            }
+            tmpTest = new Instances(test);
+            for(int j=tmpTest.numInstances()-1; j>=i; j--) tmpTest.delete(j);
+            
+            eval = new Evaluation(train);
+            eval.evaluateModel(cls, tmpTest);
+            //System.out.println("Chronic kidney disease:");
+            System.out.println(eval.toSummaryString("\nBase result\nnum of data " + i + "\n===========\n", false));
+            
+            rf = new Reframing();
+            rf.reframing(train, test, cls, i);
+
+            rq = new ReframingQuadratic();
+            rq.reframing(train, test, cls, i);
+        }
+    */    
+        // retrain
+        /*Instances retrain = new Instances(
+                            new BufferedReader(
+                                new FileReader("data/age_more_than_70_retrain.arff")));
+        retrain.setClassIndex(test.numAttributes() - 1);
+        
+        cls = new NaiveBayes();
+        cls.buildClassifier(retrain);
+        
+        eval = new Evaluation(retrain);
+        eval.evaluateModel(cls, test);
+        System.out.println(eval.toSummaryString("\nRetrain with 46 data\n===============\n", false));
+        */
         
         /////////////////////////////////////////
         // Heart disease data
@@ -90,22 +144,79 @@ public class Main {
         ois.close();
         
         // evaluate classifier and print some statistics
-        eval = new Evaluation(train);
-        eval.evaluateModel(cls, test);
-        System.out.println("Heart disease: (Hungarian)");
-        System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+        //eval = new Evaluation(train);
+        //eval.evaluateModel(cls, test);
+        System.out.println("Heart disease: (hungarian)");
+        //System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+    /*    
+        Instances tmpTest;
+        for(int i=30; ; i+=30) {
+            if(i > test.numInstances()) {
+                i = test.numInstances();
+                
+                eval = new Evaluation(train);
+                eval.evaluateModel(cls, test);
+                System.out.println(eval.toSummaryString("\nBase result\nnum of data " + i + "\n===========\n", false));
+            
+                rf = new Reframing();
+                rf.reframing(train, test, cls, i);
+
+                rq = new ReframingQuadratic();
+                rq.reframing(train, test, cls, i);
+                break;
+            }
+            tmpTest = new Instances(test);
+            for(int j=tmpTest.numInstances()-1; j>=i; j--) tmpTest.delete(j);
+            
+            eval = new Evaluation(train);
+            eval.evaluateModel(cls, tmpTest);
+            
+            System.out.println(eval.toSummaryString("\nBase result\nnum of data " + i + "\n===========\n", false));
+            
+            rf = new Reframing();
+            rf.reframing(train, test, cls, i);
+
+            rq = new ReframingQuadratic();
+            rq.reframing(train, test, cls, i);
+        }*/
         
-        rf = new Reframing();
-        rf.reframing(train, test, cls);
+        // retrain
         
-        rq = new ReframingQuadratic();
-        rq.reframing(train, test, cls);
+        Instances retrain = new Instances(test);
+        retrain.setClassIndex(retrain.numAttributes() - 1);
+        cls = new NaiveBayes();
+        cls.buildClassifier(retrain);
+        Instances tmpRetrain;
+        
+        for(int i=30; ; i+=30){
+            if(i > test.numInstances()) {
+                i = test.numInstances();
+                
+                retrain = new Instances(test);
+                retrain.setClassIndex(retrain.numAttributes() - 1);
+                eval = new Evaluation(retrain);
+                cls = new NaiveBayes();
+                cls.buildClassifier(retrain);
+                eval.evaluateModel(cls, test);
+                System.out.println(eval.toSummaryString("\nretrain with " + i + " data" + "\n===========\n", false));
+                break;
+            }
+            tmpRetrain = new Instances(test);
+            for(int j=tmpRetrain.numInstances()-1; j>=i; j--) tmpRetrain.delete(j);
+            
+            eval = new Evaluation(tmpRetrain);
+            cls = new NaiveBayes();
+            cls.buildClassifier(tmpRetrain);
+            eval.evaluateModel(cls, test);
+            
+            System.out.println(eval.toSummaryString("\nretrain with " + i + " data" + "\n===========\n", false));
+        }
         
         
         /////////////////////////////////////////
         // Synthetic data
         /////////////////////////////////////////
-        
+    /*    
         // load train data set
         train = new Instances(
                             new BufferedReader(
@@ -135,10 +246,11 @@ public class Main {
         System.out.println(eval.toSummaryString("\nResults\n======\n", false));
         
         rf = new Reframing();
-        rf.reframing(train, test, cls);
+        rf.reframing(train, test, cls, test.numInstances());
         
         rq = new ReframingQuadratic();
-        rq.reframing(train, test, cls);
+        rq.reframing(train, test, cls, test.numInstances());
+    */
     }
     
 }
