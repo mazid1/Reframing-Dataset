@@ -15,176 +15,53 @@ public class ReframingQuadratic {
 
     // y = alpha x^2 + beta x + gamma
     public void selectAlphaBetaGamma(int idx) throws Exception {
-        double p = 0.001;
-
-        double alpha = 0.0;
-        double negAlpha = alpha, posAlpha = alpha;
-        Instances shiftedNegTest = new Instances(test);
-        Instances shiftedPosTest = new Instances(test);
+     
+        double alpha=0, beta=0, gamma=0;
+        Instances tmpTest = new Instances(test);
 
         Evaluation eval = new Evaluation(train);
         eval.evaluateModel(model, test);
-        double meanAbsoluteError = eval.meanAbsoluteError();
-        double tmpMeanAbsoluteError = meanAbsoluteError;
-        double negMeanAbsoluteError;
-        double posMeanAbsoluteError;
-
-        // decrease alpha for geting better result
-        int count = 0;
-        do {
-            negAlpha -= p;
-            negMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for (int i = 0; i < shiftedNegTest.numInstances(); i++) {
-                shiftedNegTest.instance(i).setValue(idx, negAlpha * test.instance(i).value(idx) * test.instance(i).value(idx));
-            }
-            // evaluate shifted test data
-            eval.evaluateModel(model, shiftedNegTest);
-            tmpMeanAbsoluteError = eval.meanAbsoluteError();
-            count++;
-        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count <= 10); // continue if new result is better than older
-
-        // increase alpha for geting better result
-        tmpMeanAbsoluteError = meanAbsoluteError;
-        count = 0;
-        do {
-            posAlpha += p;
-            posMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for (int i = 0; i < shiftedPosTest.numInstances(); i++) {
-                shiftedPosTest.instance(i).setValue(idx, posAlpha * test.instance(i).value(idx) * test.instance(i).value(idx));
-            }
-            // evaluate shifted test data
-            eval.evaluateModel(model, shiftedPosTest);
-            tmpMeanAbsoluteError = eval.meanAbsoluteError();
-            count++;
-        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count <= 10); // continue if new result is better than older
-
-        // select best alpha
-        if (negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
-            alpha = negAlpha + p;
-            meanAbsoluteError = negMeanAbsoluteError;
-            //test = shiftedNegTest;
-        } else if (posMeanAbsoluteError < negMeanAbsoluteError && posMeanAbsoluteError < meanAbsoluteError) {
-            alpha = posAlpha - p;
-            meanAbsoluteError = posMeanAbsoluteError;
-            //test = shiftedPosTest;
-        }
-
-        // now same procedure for beta
-        negMeanAbsoluteError = meanAbsoluteError;
-        posMeanAbsoluteError = meanAbsoluteError;
-        tmpMeanAbsoluteError = meanAbsoluteError;
-
-        shiftedNegTest = new Instances(test);
-        shiftedPosTest = new Instances(test);
-
-        double beta = 0.0;
-        double negBeta = beta, posBeta = beta;
-        p = 0.01;
+        double maxCorrect = eval.correct();
+        double tmpCorrect = maxCorrect;
+        //double minMeanAbsoluteError = meanAbsoluteError;
         
-        // decrease beta for geting better result
-        count = 0;
-        do {
-            negBeta -= p;
-            negMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for (int i = 0; i < shiftedNegTest.numInstances(); i++) {
-                shiftedNegTest.instance(i).setValue(idx, negBeta * test.instance(i).value(idx));
+        for(double a = -0.009; a<=0.01; a+=0.001) {
+            for(double b = -0.09; b<=0.09; b+=0.01) {
+                for(double g = -9; g<=9; g+=1) {
+                    for (int i = 0; i < tmpTest.numInstances(); i++) {
+                        tmpTest.instance(i).setValue(idx, a * test.instance(i).value(idx) * test.instance(i).value(idx)
+                                                            + b * test.instance(i).value(idx)
+                                                            + g);
+                    }
+                    eval = new Evaluation(train);
+                    eval.evaluateModel(model, tmpTest);
+                    tmpCorrect = eval.correct();
+                    if(tmpCorrect > maxCorrect) {
+                        maxCorrect = tmpCorrect;
+                        alpha = a;
+                        beta = b;
+                        gamma = g;
+                        //System.out.println("Correct now = " + eval.correct());
+                    }
+                    
+                }
             }
-            // evaluate shifted test data
-            eval.evaluateModel(model, shiftedNegTest);
-            tmpMeanAbsoluteError = eval.meanAbsoluteError();
-            count++;
-        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count <= 10); // continue if new result is better than older
-
-        // increase beta for geting better result
-        tmpMeanAbsoluteError = meanAbsoluteError;
-        count = 0;
-        do {
-            posBeta += p;
-            posMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for (int i = 0; i < shiftedPosTest.numInstances(); i++) {
-                shiftedPosTest.instance(i).setValue(idx, posBeta * test.instance(i).value(idx));
-            }
-            // evaluate shifted test data
-            eval.evaluateModel(model, shiftedPosTest);
-            tmpMeanAbsoluteError = eval.meanAbsoluteError();
-            count++;
-        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count <= 10); // continue if new result is better than older
-
-        // select best beta
-        if (negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
-            beta = negBeta + p;
-            meanAbsoluteError = negMeanAbsoluteError;
-            //test = shiftedNegTest;
-        } else if (posMeanAbsoluteError < negMeanAbsoluteError && posMeanAbsoluteError < meanAbsoluteError) {
-            beta = posBeta - p;
-            meanAbsoluteError = posMeanAbsoluteError;
-            //test = shiftedPosTest;
         }
-
-        // now same procedure for gamma
-        negMeanAbsoluteError = meanAbsoluteError;
-        posMeanAbsoluteError = meanAbsoluteError;
-        tmpMeanAbsoluteError = meanAbsoluteError;
-
-        shiftedNegTest = new Instances(test);
-        shiftedPosTest = new Instances(test);
-
-        double gamma = 0.0;
-        double negGamma = gamma, posGamma = gamma;
-        p = 1.0;
         
-        // decrease gamma for geting better result
-        count = 0;
-        do {
-            negGamma -= p;
-            negMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for (int i = 0; i < shiftedNegTest.numInstances(); i++) {
-                shiftedNegTest.instance(i).setValue(idx, negGamma + test.instance(i).value(idx));
-            }
-            // evaluate shifted test data
-            eval.evaluateModel(model, shiftedNegTest);
-            tmpMeanAbsoluteError = eval.meanAbsoluteError();
-            count++;
-        } while (tmpMeanAbsoluteError <= negMeanAbsoluteError && count <= 10); // continue if new result is better than older
-
-        // increase gamma for geting better result
-        tmpMeanAbsoluteError = meanAbsoluteError;
-        count = 0;
-        do {
-            posGamma += p;
-            posMeanAbsoluteError = tmpMeanAbsoluteError; // save better meanAbsoluteError
-            for (int i = 0; i < shiftedPosTest.numInstances(); i++) {
-                shiftedPosTest.instance(i).setValue(idx, posGamma + test.instance(i).value(idx));
-            }
-            // evaluate shifted test data
-            eval.evaluateModel(model, shiftedPosTest);
-            tmpMeanAbsoluteError = eval.meanAbsoluteError();
-            count++;
-        } while (tmpMeanAbsoluteError <= posMeanAbsoluteError && count <= 10); // continue if new result is better than older
-
-        // select best gamma
-        if (negMeanAbsoluteError < posMeanAbsoluteError && negMeanAbsoluteError < meanAbsoluteError) {
-            gamma = negBeta + p;
-            meanAbsoluteError = negMeanAbsoluteError;
-            //test = shiftedNegTest;
-        } else if (posMeanAbsoluteError < negMeanAbsoluteError && posMeanAbsoluteError < meanAbsoluteError) {
-            gamma = posGamma - p;
-            meanAbsoluteError = posMeanAbsoluteError;
-            //test = shiftedPosTest;
-        }
-
         // now shift dataset using learned alpha beta gamma
         //System.out.println("Alpha=" + alpha + " beta=" + beta + " gamma=" + gamma);
         //System.out.println(this.test.instance(0));
-        for (int i = 0; i < this.test.numInstances(); i++) {
-            if(i==0) System.out.println("before shift" + this.test.instance(0));
-            this.test.instance(i).setValue(idx, this.test.instance(i).value(idx) * this.test.instance(i).value(idx) * alpha 
-                                                + this.test.instance(i).value(idx) * beta
-                                                + gamma);
+        if(alpha != 0 || beta != 0 || gamma != 0) {
+            for (int i = 0; i < this.test.numInstances(); i++) {
+                //if(i==0) System.out.println("before shift" + this.test.instance(0));
+                this.test.instance(i).setValue(idx, this.test.instance(i).value(idx) * this.test.instance(i).value(idx) * alpha 
+                                                    + this.test.instance(i).value(idx) * beta
+                                                    + gamma);
+            }
         }
         
-        System.out.println("Alpha=" + alpha + " beta=" + beta + " gamma=" + gamma);
-        System.out.println("after shift" + this.test.instance(0));
+        //System.out.println("Alpha=" + alpha + " beta=" + beta + " gamma=" + gamma);
+        //System.out.println("after shift" + this.test.instance(0));
     }
 
     public void hillClimbing() throws Exception {
@@ -197,6 +74,7 @@ public class ReframingQuadratic {
         Evaluation eval = new Evaluation(this.train);
         eval.evaluateModel(this.model, this.test);
         System.out.println(eval.toSummaryString("\nResults for quadratic shifted dataset\n======\n", false));
+        //System.out.println("Correct = " + eval.correct());
     }
 
     public void reframing(Instances train, Instances test, Classifier model) throws Exception {
