@@ -122,7 +122,7 @@ public class Main {
         /////////////////////////////////////////
         
         // load train data set
-        train = new Instances(
+       /* train = new Instances(
                             new BufferedReader(
                                 new FileReader("data/processed.cleveland.arff")));
         train.setClassIndex(train.numAttributes() - 1);
@@ -148,6 +148,7 @@ public class Main {
         //eval.evaluateModel(cls, test);
         System.out.println("Heart disease: (hungarian)");
         //System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+        */
     /*    
         Instances tmpTest;
         for(int i=30; ; i+=30) {
@@ -181,7 +182,7 @@ public class Main {
         }*/
         
         // retrain
-        
+        /*
         Instances retrain = new Instances(test);
         retrain.setClassIndex(retrain.numAttributes() - 1);
         cls = new NaiveBayes();
@@ -189,6 +190,102 @@ public class Main {
         Instances tmpRetrain;
         
         for(int i=30; ; i+=30){
+            if(i > test.numInstances()) {
+                i = test.numInstances();
+                
+                retrain = new Instances(test);
+                retrain.setClassIndex(retrain.numAttributes() - 1);
+                eval = new Evaluation(retrain);
+                cls = new NaiveBayes();
+                cls.buildClassifier(retrain);
+                eval.evaluateModel(cls, test);
+                System.out.println(eval.toSummaryString("\nretrain with " + i + " data" + "\n===========\n", false));
+                break;
+            }
+            tmpRetrain = new Instances(test);
+            for(int j=tmpRetrain.numInstances()-1; j>=i; j--) tmpRetrain.delete(j);
+            
+            eval = new Evaluation(tmpRetrain);
+            cls = new NaiveBayes();
+            cls.buildClassifier(tmpRetrain);
+            eval.evaluateModel(cls, test);
+            
+            System.out.println(eval.toSummaryString("\nretrain with " + i + " data" + "\n===========\n", false));
+        }*/
+        
+        
+        /////////////////////////////////////////
+        // Indian Liver Patient Dataset (ILPD)
+        /////////////////////////////////////////
+        
+        // load train data set
+        train = new Instances(
+                            new BufferedReader(
+                                new FileReader("data/ILDP_male.arff")));
+        train.setClassIndex(train.numAttributes() - 1);
+        
+        // create model
+        dp = new DataPreprocessor();
+        dp.createModel("data/ILDP_male.arff", "data/ILDP_male.model");
+        
+        // load test data set
+        test = new Instances(
+                            new BufferedReader(
+                                new FileReader("data/ILDP_female.arff")));
+        test.setClassIndex(test.numAttributes() - 1);
+        
+        // deserialize model
+        ois = new ObjectInputStream(
+                           new FileInputStream("data/ILDP_male.model"));
+        cls = (Classifier) ois.readObject();
+        ois.close();
+        
+        // evaluate classifier and print some statistics
+        //eval = new Evaluation(train);
+        //eval.evaluateModel(cls, test);
+        System.out.println("Indian Liver Patient Dataset (ILPD):");
+        //System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+        
+       /* Instances tmpTest;
+        for(int i=15; ; i+=15) {
+            if(i > test.numInstances()) {
+                i = test.numInstances();
+                
+                eval = new Evaluation(train);
+                eval.evaluateModel(cls, test);
+                System.out.println(eval.toSummaryString("\nBase result\nnum of data " + i + "\n===========\n", false));
+            
+                rf = new Reframing();
+                rf.reframing(train, test, cls, i);
+
+                rq = new ReframingQuadratic();
+                rq.reframing(train, test, cls, i);
+                break;
+            }
+            tmpTest = new Instances(test);
+            for(int j=tmpTest.numInstances()-1; j>=i; j--) tmpTest.delete(j);
+            
+            eval = new Evaluation(train);
+            eval.evaluateModel(cls, tmpTest);
+            
+            System.out.println(eval.toSummaryString("\nBase result\nnum of data " + i + "\n===========\n", false));
+            
+            rf = new Reframing();
+            rf.reframing(train, test, cls, i);
+
+            rq = new ReframingQuadratic();
+            rq.reframing(train, test, cls, i);
+        }
+        */
+        // retrain
+        
+        Instances retrain = new Instances(test);
+        retrain.setClassIndex(retrain.numAttributes() - 1);
+        cls = new NaiveBayes();
+        cls.buildClassifier(retrain);
+        Instances tmpRetrain;
+        
+        for(int i=15; ; i+=15){
             if(i > test.numInstances()) {
                 i = test.numInstances();
                 
